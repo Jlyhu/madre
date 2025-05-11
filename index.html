@@ -17,11 +17,18 @@
             font-size: 2.5em;
         }
 
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centra el contenedor */
+            margin-bottom: 20px;
+        }
+
         #game-board {
             display: grid;
             grid-template-columns: repeat(4, 100px);
             grid-gap: 10px;
-            margin: 20px auto;
+            margin: 20px;
         }
 
         .card {
@@ -87,14 +94,23 @@
         #collage-link:hover {
             background-color: #388e3c; /* Color del botón de descarga al pasar el mouse */
         }
+
+        #message {
+            margin-top: 20px;
+            font-size: 1.5em;
+            color: #cd5c5c;
+        }
     </style>
 </head>
 <body>
 
     <h1>Feliz Día de la Madre</h1>
-    <div id="game-board"></div>
-    <button id="reset-button">Reiniciar Juego</button>
-    <a id="collage-link" href="collage.jpg" download>Descargar Collage</a>
+    <div id="game-container">
+        <div id="game-board"></div>
+        <button id="reset-button">Reiniciar Juego</button>
+        <a id="collage-link" href="collage.jpg" download>Descargar Collage</a>
+        <div id="message"></div> <!-- Contenedor para mensajes -->
+    </div>
 
     <script>
         const images = [
@@ -106,11 +122,23 @@
             'diaMadre6.jpg', 'diaMadre6.jpg'
         ]; // Asegúrate de tener tus seis imágenes aquí
 
+        const messages = [
+            "¡Eres la mejor madre del mundo!",
+            "Gracias por tu amor incondicional.",
+            "¡Te quiero mucho, mamá!",
+            "Hoy celebramos a una madre excepcional.",
+            "Eres una fuente de inspiración.",
+            "Gracias por ser mi guía y soporte.",
+            "Tu amor hace que todo sea mejor.",
+            "¡Feliz día, mamá! Eres única."
+        ]; // Mensajes para celebrar el Día de la Madre
+
         let flippedCards = [];
         let matchedCards = [];
         const gameBoard = document.getElementById("game-board");
         const resetButton = document.getElementById("reset-button");
         const collageLink = document.getElementById("collage-link");
+        const messageDiv = document.getElementById("message");
 
         function shuffleArray(array) {
             return array.sort(() => Math.random() - 0.5);
@@ -133,6 +161,7 @@
                 gameBoard.appendChild(card);
             });
             collageLink.style.display = 'none'; // Ocultar el link de descarga al reiniciar
+            messageDiv.textContent = ''; // Limpiar mensajes
         }
 
         function flipCard() {
@@ -154,6 +183,9 @@
                 firstCard.classList.add('matched');
                 secondCard.classList.add('matched');
                 flippedCards = [];
+
+                // Mostrar un mensaje bonito al emparejar
+                messageDiv.textContent = messages[Math.floor(Math.random() * messages.length)];
 
                 // Mostrar el link de descarga cuando todas las parejas han sido encontradas
                 if (matchedCards.length === images.length) {
