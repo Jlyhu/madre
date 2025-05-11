@@ -10,11 +10,13 @@
             text-align: center;
             background-color: #ffe4e1; /* Color de fondo suave */
             color: #8b0076; /* Color de texto */
+            margin: 0;
+            padding: 20px;
         }
 
         h1 {
-            margin-top: 20px;
             font-size: 2.5em;
+            margin-bottom: 10px;
         }
 
         #game-container {
@@ -24,11 +26,26 @@
             margin-bottom: 20px;
         }
 
+        #message {
+            margin-bottom: 20px;
+            font-size: 1.8em; /* Tamaño del texto */
+            color: #cd5c5c;
+            min-height: 50px; /* Espacio reservado para el mensaje */
+            width: 100%; /* Abarcar toda la pantalla */
+            max-width: 600px; /* Limitar anchura máxima */
+            background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco traslúcido */
+            border-radius: 5px; /* Bordes redondeados */
+            padding: 10px; /* Espaciado interno */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+            margin: 0 auto; /* Centrar horizontalmente */
+        }
+
         #game-board {
             display: grid;
-            grid-template-columns: repeat(4, 100px);
+            grid-template-columns: repeat(4, 1fr); /* Cambia '100px' por '1fr' para que sea responsivo */
             grid-gap: 10px;
-            margin: 20px;
+            max-width: 600px; /* Definir un tamaño máximo */
+            margin: 0 auto; /* Centrar el tablero */
         }
 
         .card {
@@ -37,11 +54,9 @@
             border-radius: 10px;
             cursor: pointer;
             height: 100px;
-            width: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
             position: relative;
             transition: transform 0.2s; /* Efecto al hacer clic */
         }
@@ -95,10 +110,23 @@
             background-color: #388e3c; /* Color del botón de descarga al pasar el mouse */
         }
 
-        #message {
-            margin-top: 20px;
-            font-size: 1.5em;
-            color: #cd5c5c;
+        /* Responsividad para pantallas más pequeñas */
+        @media (max-width: 600px) {
+            #game-board {
+                grid-template-columns: repeat(2, 1fr); /* Dos columnas en pantallas pequeñas */
+            }
+
+            .card {
+                height: 80px; /* Ajustar altura en pantallas pequeñas */
+            }
+
+            h1 {
+                font-size: 2em; /* Ajustar tamaño del título */
+            }
+
+            #message {
+                font-size: 1.5em; /* Ajustar tamaño del mensaje */
+            }
         }
     </style>
 </head>
@@ -106,10 +134,10 @@
 
     <h1>Feliz Día de la Madre</h1>
     <div id="game-container">
+        <div id="message"></div> <!-- Contenedor para mensajes en la parte superior -->
         <div id="game-board"></div>
         <button id="reset-button">Reiniciar Juego</button>
         <a id="collage-link" href="collage.jpg" download>Descargar Collage</a>
-        <div id="message"></div> <!-- Contenedor para mensajes -->
     </div>
 
     <script>
