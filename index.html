@@ -4,80 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Juego de Memoria - Día de la Madre</title>
+    <!-- Añadiendo la fuente Poppins de Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
             text-align: center;
-            background-color: #ffe4e1; /* Color de fondo suave */
-            color: #8b0076; /* Color de texto */
+            background-color: #ffe4e1;
+            color: #8b0076;
             margin: 0;
             padding: 20px;
+            overflow-x: hidden; /* Para que la lluvia de flores no cree scroll horizontal */
         }
 
         h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
+            font-weight: 700;
         }
 
         #game-container {
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centra el contenedor */
+            align-items: center;
             margin-bottom: 20px;
+            position: relative; /* Para el posicionamiento de elementos emergentes */
         }
 
         #message {
             margin-bottom: 20px;
-            font-size: 1.8em; /* Tamaño del texto */
+            font-size: 1.8em;
             color: #cd5c5c;
-            min-height: 50px; /* Espacio reservado para el mensaje */
-            width: 100%; /* Abarcar toda la pantalla */
-            max-width: 600px; /* Limitar anchura máxima */
-            background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco traslúcido */
-            border-radius: 5px; /* Bordes redondeados */
-            padding: 10px; /* Espaciado interno */
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
-            margin: 0 auto; /* Centrar horizontalmente */
+            min-height: 50px;
+            width: 100%;
+            max-width: 600px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin: 0 auto 20px auto;
+            font-weight: 500;
         }
 
         #game-board {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* Cambia '100px' por '1fr' para que sea responsivo */
+            grid-template-columns: repeat(4, 1fr);
             grid-gap: 10px;
-            max-width: 600px; /* Definir un tamaño máximo */
-            margin: 0 auto; /* Centrar el tablero */
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .card {
-            background-color: #f6d1de; /* Color de las cartas */
-            border: 1px solid #cd5c5c; /* Color del borde */
+            background-color: #f6d1de;
+            border: 2px solid #cd5c5c;
             border-radius: 10px;
             cursor: pointer;
-            height: 100px;
+            height: 120px; /* Aumentado el tamaño */
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            transition: transform 0.2s; /* Efecto al hacer clic */
+            transition: transform 0.2s;
+            overflow: hidden; /* Para que las imágenes no se salgan de la carta */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .card:hover {
-            transform: scale(1.05); /* Efecto de hover */
+            transform: scale(1.05);
+        }
+
+        .card-backface {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            width: 100%;
+            height: 100%;
         }
 
         .card img {
-            width: 100%;
-            height: 100%;
-            border-radius: 10px;
-            display: none; /* Ocultar imagen por defecto */
+            width: 90%; /* Reducido para dejar un margen */
+            height: 90%; /* Reducido para dejar un margen */
+            object-fit: contain; /* Cambiado a contain para ver la imagen completa */
+            border-radius: 8px;
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white; /* Fondo blanco para imágenes transparentes */
         }
 
         .matched {
-            background-color: #98fb98; /* Color de las cartas emparejadas */
+            background-color: #98fb98;
         }
 
         .flipped img {
-            display: block; /* Mostrar la imagen al voltear */
+            display: block;
         }
 
         #reset-button {
@@ -85,56 +108,127 @@
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
-            background-color: #ff69b4; /* Color del botón */
+            background-color: #ff69b4;
             color: white;
             border: none;
             border-radius: 5px;
             transition: background-color 0.3s;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
         }
 
         #reset-button:hover {
-            background-color: #ff1493; /* Color del botón al pasar el mouse */
+            background-color: #ff1493;
         }
 
         #collage-link {
-            display: none; /* Ocultar el link de descarga inicialmente */
+            display: none;
             margin-top: 20px;
             text-decoration: none;
             padding: 10px 20px;
-            background-color: #4caf50; /* Color del botón de descarga */
+            background-color: #4caf50;
             color: white;
             border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
         }
 
         #collage-link:hover {
-            background-color: #388e3c; /* Color del botón de descarga al pasar el mouse */
+            background-color: #388e3c;
+        }
+
+        /* Estilos para el mensaje emergente */
+        .popup-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            max-width: 80%;
+            font-size: 1.5em;
+            color: #8b0076;
+            animation: fadeIn 0.5s;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Lluvia de flores */
+        .flower {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23FF69B4" d="M12,2A2,2 0 0,1 14,4A2,2 0 0,1 12,6A2,2 0 0,1 10,4A2,2 0 0,1 12,2M12,8A4,4 0 0,0 16,4A4,4 0 0,0 12,0A4,4 0 0,0 8,4A4,4 0 0,0 12,8M12,10A4,4 0 0,0 8,14A4,4 0 0,0 12,18A4,4 0 0,0 16,14A4,4 0 0,0 12,10M18,14A2,2 0 0,1 20,16A2,2 0 0,1 18,18A2,2 0 0,1 16,16A2,2 0 0,1 18,14M18,20A4,4 0 0,0 22,16A4,4 0 0,0 18,12A4,4 0 0,0 14,16A4,4 0 0,0 18,20M6,14A2,2 0 0,1 8,16A2,2 0 0,1 6,18A2,2 0 0,1 4,16A2,2 0 0,1 6,14M6,20A4,4 0 0,0 10,16A4,4 0 0,0 6,12A4,4 0 0,0 2,16A4,4 0 0,0 6,20M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,22A4,4 0 0,0 16,18A4,4 0 0,0 12,14A4,4 0 0,0 8,18A4,4 0 0,0 12,22Z" /></svg>');
+            background-size: contain;
+            opacity: 0.8;
+            z-index: 999;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes fall {
+            from { transform: translateY(-100px) rotate(0deg); opacity: 0.8; }
+            to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Overlay para cuando aparece el mensaje emergente */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
         }
 
         /* Responsividad para pantallas más pequeñas */
         @media (max-width: 600px) {
             #game-board {
-                grid-template-columns: repeat(2, 1fr); /* Dos columnas en pantallas pequeñas */
+                grid-template-columns: repeat(2, 1fr);
+                grid-gap: 8px;
+                width: 95%;
             }
 
             .card {
-                height: 80px; /* Ajustar altura en pantallas pequeñas */
+                height: 100px; /* Ajustado para móviles */
             }
 
             h1 {
-                font-size: 2em; /* Ajustar tamaño del título */
+                font-size: 2em;
             }
 
             #message {
-                font-size: 1.5em; /* Ajustar tamaño del mensaje */
+                font-size: 1.5em;
+            }
+
+            .popup-message {
+                font-size: 1.2em;
+                padding: 15px 20px;
             }
         }
     </style>
 </head>
 <body>
+    <div class="overlay" id="overlay"></div>
 
     <h1>Feliz Día de la Madre</h1>
     <div id="game-container">
-        <div id="message"></div> <!-- Contenedor para mensajes en la parte superior -->
+        <div id="message"></div>
         <div id="game-board"></div>
         <button id="reset-button">Reiniciar Juego</button>
         <a id="collage-link" href="collage.jpg" download>Descargar Collage</a>
@@ -148,7 +242,7 @@
             'diaMadre4.jpg', 'diaMadre4.jpg',
             'diaMadre5.jpg', 'diaMadre5.jpg',
             'diaMadre6.jpg', 'diaMadre6.jpg'
-        ]; // Asegúrate de tener tus seis imágenes aquí
+        ];
 
         const messages = [
             "¡Eres la mejor madre del mundo!",
@@ -159,7 +253,7 @@
             "Gracias por ser mi guía y soporte.",
             "Tu amor hace que todo sea mejor.",
             "¡Feliz día, mamá! Eres única."
-        ]; // Mensajes para celebrar el Día de la Madre
+        ];
 
         let flippedCards = [];
         let matchedCards = [];
@@ -167,11 +261,14 @@
         const resetButton = document.getElementById("reset-button");
         const collageLink = document.getElementById("collage-link");
         const messageDiv = document.getElementById("message");
+        const overlay = document.getElementById("overlay");
 
+        // Función para barajar el array de imágenes
         function shuffleArray(array) {
             return array.sort(() => Math.random() - 0.5);
         }
 
+        // Crear el tablero del juego
         function createBoard() {
             const shuffledImages = shuffleArray(images);
             gameBoard.innerHTML = '';
@@ -181,17 +278,41 @@
                 card.classList.add("card");
                 card.dataset.image = image;
 
+                // Crear un div de reverso (cara trasera)
+                const backface = document.createElement("div");
+                backface.classList.add("card-backface");
+                backface.innerHTML = "❤️"; // Corazón como símbolo en el reverso
+                card.appendChild(backface);
+
+                // Crear la imagen (cara delantera)
                 const img = document.createElement("img");
                 img.src = image;
+                img.onerror = function() {
+                    // Si la imagen no carga, mostrar un mensaje de error en la consola
+                    console.error(`Error cargando la imagen: ${image}`);
+                    // Y mostrar un corazón más grande como alternativa
+                    this.style.display = "none";
+                    const errorDiv = document.createElement("div");
+                    errorDiv.innerHTML = "❤️";
+                    errorDiv.style.fontSize = "40px";
+                    errorDiv.style.color = "#ff1493";
+                    card.appendChild(errorDiv);
+                };
+                img.onload = function() {
+                    // Confirmar que la imagen se cargó correctamente
+                    console.log(`Imagen cargada correctamente: ${image}`);
+                };
                 card.appendChild(img);
 
                 card.addEventListener("click", flipCard);
                 gameBoard.appendChild(card);
             });
-            collageLink.style.display = 'none'; // Ocultar el link de descarga al reiniciar
-            messageDiv.textContent = ''; // Limpiar mensajes
+            collageLink.style.display = 'none';
+            messageDiv.textContent = ''; 
+            matchedCards = [];
         }
 
+        // Voltear la carta cuando se hace clic
         function flipCard() {
             if (flippedCards.length < 2 && !this.classList.contains('flipped')) {
                 this.classList.add('flipped');
@@ -203,6 +324,7 @@
             }
         }
 
+        // Comprobar si las cartas volteadas coinciden
         function checkForMatch() {
             const [firstCard, secondCard] = flippedCards;
 
@@ -212,14 +334,15 @@
                 secondCard.classList.add('matched');
                 flippedCards = [];
 
-                // Mostrar un mensaje bonito al emparejar
-                messageDiv.textContent = messages[Math.floor(Math.random() * messages.length)];
+                // Mostrar mensaje emergente con una frase aleatoria
+                showPopupMessage(messages[Math.floor(Math.random() * messages.length)]);
 
-                // Mostrar el link de descarga cuando todas las parejas han sido encontradas
+                // Si se han encontrado todas las parejas
                 if (matchedCards.length === images.length) {
                     setTimeout(() => {
-                        alert('¡Felicidades! Has encontrado todas las parejas.');
-                        collageLink.style.display = 'inline'; // Mostrar link de descarga
+                        createFlowerRain(); // Crear lluvia de flores
+                        showPopupMessage("¡Felicidades! Has encontrado todas las parejas. ¡Feliz Día de la Madre!");
+                        collageLink.style.display = 'inline';
                     }, 500);
                 }
             } else {
@@ -231,7 +354,74 @@
             }
         }
 
+        // Mostrar mensaje emergente
+        function showPopupMessage(text) {
+            // Eliminar cualquier mensaje emergente anterior
+            const existingPopup = document.querySelector('.popup-message');
+            if (existingPopup) {
+                existingPopup.remove();
+            }
+
+            // Crear y mostrar el nuevo mensaje emergente
+            const popup = document.createElement('div');
+            popup.classList.add('popup-message');
+            popup.textContent = text;
+            document.body.appendChild(popup);
+            overlay.style.display = 'block';
+
+            // Eliminar el mensaje después de un tiempo
+            setTimeout(() => {
+                popup.style.animation = 'fadeOut 0.5s forwards';
+                setTimeout(() => {
+                    popup.remove();
+                    overlay.style.display = 'none';
+                }, 500);
+            }, 2000);
+        }
+
+        // Crear lluvia de flores
+        function createFlowerRain() {
+            // Número de flores
+            const flowerCount = 50;
+            
+            // Crear flores
+            for (let i = 0; i < flowerCount; i++) {
+                setTimeout(() => {
+                    const flower = document.createElement('div');
+                    flower.classList.add('flower');
+                    
+                    // Posición horizontal aleatoria
+                    const xPos = Math.random() * window.innerWidth;
+                    flower.style.left = `${xPos}px`;
+                    
+                    // Tamaño aleatorio
+                    const size = 10 + Math.random() * 20;
+                    flower.style.width = `${size}px`;
+                    flower.style.height = `${size}px`;
+                    
+                    // Color aleatorio
+                    const colors = ['#ff69b4', '#ff1493', '#cd5c5c', '#8b0076', '#ff6347'];
+                    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                    flower.style.filter = `hue-rotate(${Math.random() * 360}deg)`;
+                    
+                    // Velocidad aleatoria
+                    const duration = 3 + Math.random() * 5;
+                    flower.style.animation = `fall ${duration}s linear forwards`;
+                    
+                    document.body.appendChild(flower);
+                    
+                    // Eliminar flor después de la animación
+                    setTimeout(() => {
+                        flower.remove();
+                    }, duration * 1000);
+                }, i * 100); // Retraso para que no aparezcan todas a la vez
+            }
+        }
+
+        // Evento para reiniciar el juego
         resetButton.addEventListener("click", createBoard);
+        
+        // Iniciar el juego
         createBoard();
     </script>
 </body>
