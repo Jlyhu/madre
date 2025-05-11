@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Juego de Memoria - Día de la Madre</title>
-    <!-- Añadiendo la fuente Poppins de Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -14,7 +13,7 @@
             color: #8b0076;
             margin: 0;
             padding: 20px;
-            overflow-x: hidden; /* Para que la lluvia de flores no cree scroll horizontal */
+            overflow-x: hidden;
         }
 
         h1 {
@@ -28,7 +27,7 @@
             flex-direction: column;
             align-items: center;
             margin-bottom: 20px;
-            position: relative; /* Para el posicionamiento de elementos emergentes */
+            position: relative;
         }
 
         #message {
@@ -59,14 +58,16 @@
             border: 2px solid #cd5c5c;
             border-radius: 10px;
             cursor: pointer;
-            height: 120px; /* Aumentado el tamaño */
+            width: 120px;
+            height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             transition: transform 0.2s;
-            overflow: hidden; /* Para que las imágenes no se salgan de la carta */
+            overflow: hidden;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            aspect-ratio: 1/1;
         }
 
         .card:hover {
@@ -80,23 +81,24 @@
             font-size: 30px;
             width: 100%;
             height: 100%;
+            background-color: #f6d1de;
         }
 
         .card img {
-            width: 90%; /* Reducido para dejar un margen */
-            height: 90%; /* Reducido para dejar un margen */
-            object-fit: contain; /* Cambiado a contain para ver la imagen completa */
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             border-radius: 8px;
             display: none;
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white; /* Fondo blanco para imágenes transparentes */
+            top: 0;
+            left: 0;
+            background-color: white;
         }
 
         .matched {
             background-color: #98fb98;
+            border-color: #4caf50;
         }
 
         .flipped img {
@@ -137,7 +139,6 @@
             background-color: #388e3c;
         }
 
-        /* Estilos para el mensaje emergente */
         .popup-message {
             position: fixed;
             top: 50%;
@@ -156,7 +157,6 @@
             text-align: center;
         }
 
-        /* Lluvia de flores */
         .flower {
             position: absolute;
             width: 20px;
@@ -184,7 +184,6 @@
             to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
         }
 
-        /* Overlay para cuando aparece el mensaje emergente */
         .overlay {
             position: fixed;
             top: 0;
@@ -196,7 +195,6 @@
             display: none;
         }
 
-        /* Responsividad para pantallas más pequeñas */
         @media (max-width: 600px) {
             #game-board {
                 grid-template-columns: repeat(2, 1fr);
@@ -205,7 +203,8 @@
             }
 
             .card {
-                height: 100px; /* Ajustado para móviles */
+                width: 100px;
+                height: 100px;
             }
 
             h1 {
@@ -225,6 +224,9 @@
 </head>
 <body>
     <div class="overlay" id="overlay"></div>
+    <audio id="matchSound" src="https://assets.mixkit.co/sfx/preview/mixkit-magic-sparkles-1681.mp3" preload="auto"></audio>
+    <audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
+    <audio id="flipSound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" preload="auto"></audio>
 
     <h1>Feliz Día de la Madre</h1>
     <div id="game-container">
@@ -235,194 +237,129 @@
     </div>
 
     <script>
-        const images = [
-            'diaMadre1.jpg', 'diaMadre1.jpg', 
-            'diaMadre2.jpg', 'diaMadre2.jpg', 
-            'diaMadre3.jpg', 'diaMadre3.jpg', 
-            'diaMadre4.jpg', 'diaMadre4.jpg',
-            'diaMadre5.jpg', 'diaMadre5.jpg',
-            'diaMadre6.jpg', 'diaMadre6.jpg'
-        ];
+    const images = [
+        'diaMadre1.jpg', 'diaMadre1.jpg',
+        'diaMadre2.jpg', 'diaMadre2.jpg',
+        'diaMadre3.jpg', 'diaMadre3.jpg',
+        'diaMadre4.jpg', 'diaMadre4.jpg',
+        'diaMadre5.jpg', 'diaMadre5.jpg',
+        'diaMadre6.jpg', 'diaMadre6.jpg',
+        'diaMadre7.jpg', 'diaMadre7.jpg',
+        'diaMadre8.jpg', 'diaMadre8.jpg'
+    ];
 
-        const messages = [
-            "¡Eres la mejor madre del mundo!",
-            "Gracias por tu amor incondicional.",
-            "¡Te quiero mucho, mamá!",
-            "Hoy celebramos a una madre excepcional.",
-            "Eres una fuente de inspiración.",
-            "Gracias por ser mi guía y soporte.",
-            "Tu amor hace que todo sea mejor.",
-            "¡Feliz día, mamá! Eres única."
-        ];
+    let flippedCards = [];
+    let matchedCards = [];
 
-        let flippedCards = [];
-        let matchedCards = [];
-        const gameBoard = document.getElementById("game-board");
-        const resetButton = document.getElementById("reset-button");
-        const collageLink = document.getElementById("collage-link");
-        const messageDiv = document.getElementById("message");
-        const overlay = document.getElementById("overlay");
+    const gameBoard = document.getElementById('game-board');
+    const message = document.getElementById('message');
+    const resetButton = document.getElementById('reset-button');
+    const collageLink = document.getElementById('collage-link');
+    const matchSound = document.getElementById('matchSound');
+    const winSound = document.getElementById('winSound');
+    const flipSound = document.getElementById('flipSound');
+    const overlay = document.getElementById('overlay');
 
-        // Función para barajar el array de imágenes
-        function shuffleArray(array) {
-            return array.sort(() => Math.random() - 0.5);
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
         }
+        return array;
+    }
 
-        // Crear el tablero del juego
-        function createBoard() {
-            const shuffledImages = shuffleArray(images);
-            gameBoard.innerHTML = '';
+    function createCard(imageSrc) {
+        const card = document.createElement('div');
+        card.classList.add('card');
 
-            shuffledImages.forEach(image => {
-                const card = document.createElement("div");
-                card.classList.add("card");
-                card.dataset.image = image;
+        const img = document.createElement('img');
+        img.src = imageSrc;
 
-                // Crear un div de reverso (cara trasera)
-                const backface = document.createElement("div");
-                backface.classList.add("card-backface");
-                backface.innerHTML = "❤️"; // Corazón como símbolo en el reverso
-                card.appendChild(backface);
+        const backface = document.createElement('div');
+        backface.classList.add('card-backface');
+        backface.textContent = '♥';
 
-                // Crear la imagen (cara delantera)
-                const img = document.createElement("img");
-                img.src = image;
-                img.onerror = function() {
-                    // Si la imagen no carga, mostrar un mensaje de error en la consola
-                    console.error(`Error cargando la imagen: ${image}`);
-                    // Y mostrar un corazón más grande como alternativa
-                    this.style.display = "none";
-                    const errorDiv = document.createElement("div");
-                    errorDiv.innerHTML = "❤️";
-                    errorDiv.style.fontSize = "40px";
-                    errorDiv.style.color = "#ff1493";
-                    card.appendChild(errorDiv);
-                };
-                img.onload = function() {
-                    // Confirmar que la imagen se cargó correctamente
-                    console.log(`Imagen cargada correctamente: ${image}`);
-                };
-                card.appendChild(img);
+        card.appendChild(img);
+        card.appendChild(backface);
 
-                card.addEventListener("click", flipCard);
-                gameBoard.appendChild(card);
-            });
-            collageLink.style.display = 'none';
-            messageDiv.textContent = ''; 
-            matchedCards = [];
-        }
-
-        // Voltear la carta cuando se hace clic
-        function flipCard() {
-            if (flippedCards.length < 2 && !this.classList.contains('flipped')) {
-                this.classList.add('flipped');
-                flippedCards.push(this);
-
-                if (flippedCards.length === 2) {
-                    checkForMatch();
-                }
+        card.addEventListener('click', () => {
+            if (card.classList.contains('flipped') || card.classList.contains('matched') || flippedCards.length === 2) {
+                return;
             }
-        }
 
-        // Comprobar si las cartas volteadas coinciden
-        function checkForMatch() {
-            const [firstCard, secondCard] = flippedCards;
+            card.classList.add('flipped');
+            flipSound.play();
+            flippedCards.push(card);
 
-            if (firstCard.dataset.image === secondCard.dataset.image) {
-                matchedCards.push(firstCard, secondCard);
-                firstCard.classList.add('matched');
-                secondCard.classList.add('matched');
-                flippedCards = [];
+            if (flippedCards.length === 2) {
+                checkMatch();
+            }
+        });
 
-                // Mostrar mensaje emergente con una frase aleatoria
-                showPopupMessage(messages[Math.floor(Math.random() * messages.length)]);
+        return card;
+    }
 
-                // Si se han encontrado todas las parejas
-                if (matchedCards.length === images.length) {
-                    setTimeout(() => {
-                        createFlowerRain(); // Crear lluvia de flores
-                        showPopupMessage("¡Felicidades! Has encontrado todas las parejas. ¡Feliz Día de la Madre!");
-                        collageLink.style.display = 'inline';
-                    }, 500);
-                }
-            } else {
+    function checkMatch() {
+        const [card1, card2] = flippedCards;
+        const img1 = card1.querySelector('img').src;
+        const img2 = card2.querySelector('img').src;
+
+        if (img1 === img2) {
+            matchSound.play();
+            card1.classList.add('matched');
+            card2.classList.add('matched');
+            matchedCards.push(card1, card2);
+            flippedCards = [];
+
+            if (matchedCards.length === images.length) {
                 setTimeout(() => {
-                    firstCard.classList.remove('flipped');
-                    secondCard.classList.remove('flipped');
-                    flippedCards = [];
-                }, 1000);
-            }
-        }
-
-        // Mostrar mensaje emergente
-        function showPopupMessage(text) {
-            // Eliminar cualquier mensaje emergente anterior
-            const existingPopup = document.querySelector('.popup-message');
-            if (existingPopup) {
-                existingPopup.remove();
-            }
-
-            // Crear y mostrar el nuevo mensaje emergente
-            const popup = document.createElement('div');
-            popup.classList.add('popup-message');
-            popup.textContent = text;
-            document.body.appendChild(popup);
-            overlay.style.display = 'block';
-
-            // Eliminar el mensaje después de un tiempo
-            setTimeout(() => {
-                popup.style.animation = 'fadeOut 0.5s forwards';
-                setTimeout(() => {
-                    popup.remove();
-                    overlay.style.display = 'none';
+                    winSound.play();
+                    showPopup('¡Has completado el juego!');
+                    collageLink.style.display = 'inline-block';
                 }, 500);
-            }, 2000);
-        }
-
-        // Crear lluvia de flores
-        function createFlowerRain() {
-            // Número de flores
-            const flowerCount = 50;
-            
-            // Crear flores
-            for (let i = 0; i < flowerCount; i++) {
-                setTimeout(() => {
-                    const flower = document.createElement('div');
-                    flower.classList.add('flower');
-                    
-                    // Posición horizontal aleatoria
-                    const xPos = Math.random() * window.innerWidth;
-                    flower.style.left = `${xPos}px`;
-                    
-                    // Tamaño aleatorio
-                    const size = 10 + Math.random() * 20;
-                    flower.style.width = `${size}px`;
-                    flower.style.height = `${size}px`;
-                    
-                    // Color aleatorio
-                    const colors = ['#ff69b4', '#ff1493', '#cd5c5c', '#8b0076', '#ff6347'];
-                    const randomColor = colors[Math.floor(Math.random() * colors.length)];
-                    flower.style.filter = `hue-rotate(${Math.random() * 360}deg)`;
-                    
-                    // Velocidad aleatoria
-                    const duration = 3 + Math.random() * 5;
-                    flower.style.animation = `fall ${duration}s linear forwards`;
-                    
-                    document.body.appendChild(flower);
-                    
-                    // Eliminar flor después de la animación
-                    setTimeout(() => {
-                        flower.remove();
-                    }, duration * 1000);
-                }, i * 100); // Retraso para que no aparezcan todas a la vez
             }
+        } else {
+            setTimeout(() => {
+                card1.classList.remove('flipped');
+                card2.classList.remove('flipped');
+                flippedCards = [];
+            }, 1000);
         }
+    }
 
-        // Evento para reiniciar el juego
-        resetButton.addEventListener("click", createBoard);
-        
-        // Iniciar el juego
-        createBoard();
+    function initGame() {
+        gameBoard.innerHTML = '';
+        message.textContent = '';
+        collageLink.style.display = 'none';
+        matchedCards = [];
+        flippedCards = [];
+        const shuffledImages = shuffle([...images]);
+        shuffledImages.forEach(img => {
+            const card = createCard(img);
+            gameBoard.appendChild(card);
+        });
+    }
+
+    function showPopup(text) {
+        const popup = document.createElement('div');
+        popup.classList.add('popup-message');
+        popup.textContent = text;
+        document.body.appendChild(popup);
+        overlay.style.display = 'block';
+
+        setTimeout(() => {
+            popup.style.animation = 'fadeOut 0.5s forwards';
+            overlay.style.display = 'none';
+            setTimeout(() => {
+                popup.remove();
+            }, 500);
+        }, 3000);
+    }
+
+    resetButton.addEventListener('click', initGame);
+
+    // Inicia el juego
+    initGame();
     </script>
 </body>
 </html>
