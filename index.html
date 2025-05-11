@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -44,7 +45,11 @@
             margin: 0 auto 20px auto;
             font-weight: 500;
         }
-
+#message {
+    visibility: hidden; /* Mantiene el espacio pero no se ve */
+    /* o */
+    display: none; /* Elimina completamente el espacio */
+}
         #game-board {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
